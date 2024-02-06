@@ -1,25 +1,50 @@
-const Post = require('../models/post');
+import Post from '../models/post.js';
+
+// This is the create post end point
 
 const createPost = async (req, res) => {
   try {
-    const { title, content,userId } = req.body;
-    const post = new Post({ title, content, author:userId  });
+    const { title, content, userId } = req.body;
+    const post = new Post({ title, content, author: userId });
     await post.save();
-    res.status(201).json({ message: 'Post created successfully', post});
+    const totalPosts = await Post.countDocuments();
+    const totalPages = Math.ceil(totalPosts / limit);
+    res.status(201).json({ message: 'Post created successfully',
+    post,
+    page: totalPages, });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+// This is the get All posts end point
 const getPosts = async (req, res) => {
   try {
-    const posts = await Post.find().populate('author', 'username');
-    res.json({ posts });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const posts = await Post.find()
+      .skip(startIndex)
+      .limit(limit)
+      .populate('author', 'username');
+
+    const totalPosts = await Post.countDocuments();
+
+    const pagination = {
+      totalPages: Math.ceil(totalPosts / limit),
+      currentPage: page,
+    };
+
+    res.json({ posts, pagination });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+// This is the Updating post end point
 const editPost = async (req, res) => {
   const id = req.params.id;
   try {
@@ -39,6 +64,7 @@ const editPost = async (req, res) => {
   }
 };
 
+// This is the deletion post end point
 const deletePost = async (req, res) => {
   const id = req.params.id;
   try {
@@ -54,4 +80,4 @@ const deletePost = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getPosts, editPost, deletePost };
+export { createPost, getPosts, editPost, deletePost };
