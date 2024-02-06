@@ -1,9 +1,9 @@
 // importind depences
 import express from 'express';
 import bodyParser from 'body-parser';
-import authRoutes from './routes/auth.js';
-import postRoutes from './routes/posts.js';
-import Dbconnection from './config/databaseConnection.js';
+import authRoutes from './src/routes/auth.js';
+import postRoutes from './src/routes/posts.js';
+import Dbconnection from './src/config/databaseConnection.js';
 
 const app = express();
 
