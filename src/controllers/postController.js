@@ -85,7 +85,7 @@ const deletePost = async (req, res) => {
 
 
 // Create Comment endpoint
-const createComment = async (req, res) => {
+const postComment = async (req, res) => {
   try {
     const { postId, content, userId } = req.body;
 
@@ -123,4 +123,4 @@ const getCommentsForPost = async (req, res) => {
   }
 };
 
-export { createPost, getPosts, editPost, deletePost,createComment,getCommentsForPost };
+export { createPost, getPosts, editPost, deletePost,postComment,getCommentsForPost };
