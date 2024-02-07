@@ -1,20 +1,23 @@
 // Import the Post model
 import Post from '../models/post.js';
 // Import the Comment model
-import Comment from '../models/comment.js';
+
 
 // This is the create post end point
 
 const createPost = async (req, res) => {
   try {
     const { title, content, userId } = req.body;
-    const post = new Post({ title, content, author: userId });
+    const limit = 10; // Set your desired limit value here
+    const post = new Post({ title, content, author: userId, comments: [], likes: 0 });
     await post.save();
     const totalPosts = await Post.countDocuments();
     const totalPages = Math.ceil(totalPosts / limit);
-    res.status(201).json({ message: 'Post created successfully',
-    post,
-    page: totalPages, });
+    res.status(201).json({
+      message: 'Post created successfully',
+      post,
+      page: totalPages,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -87,40 +90,44 @@ const deletePost = async (req, res) => {
 // Create Comment endpoint
 const postComment = async (req, res) => {
   try {
-    const { postId, content, userId } = req.body;
+    const { postId } = req.params;
+    const { body } = req.body;
 
-    // Check if the post exists
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return res.status(404).json({ error: 'Post not found' });
     }
 
-    const comment = new Comment({ content, author: userId, post: postId });
-    await comment.save();
-
-    res.status(201).json({ message: 'Comment created successfully', comment });
+    post.comments.push({ body, likes: 0 });
+    await post.save();
+    res.json(post);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Get Comments for a Post endpoint
-const getCommentsForPost = async (req, res) => {
+// Like post 
+const likeThePost = async (req, res) => {
   try {
-    const postId = req.params.postId;
+    const { postId } = req.params;
+    const { type } = req.body;
 
-    // Check if the post exists
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return res.status(404).json({ error: 'Post not found' });
     }
 
-    const comments = await Comment.find({ post: postId }).populate('author', 'username');
+    if (type === 'post') {
+      post.likes += 1;
+    }else {
+      return res.status(400).json({ error: 'Invalid like type' });
+    }
 
-    res.json({ comments });
+    await post.save();
+    res.json(post);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-export { createPost, getPosts, editPost, deletePost,postComment,getCommentsForPost };
+export { createPost, getPosts, editPost, deletePost,postComment,likeThePost };
