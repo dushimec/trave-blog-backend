@@ -1,4 +1,7 @@
+// Import the Post model
 import Post from '../models/post.js';
+// Import the Comment model
+import Comment from '../models/comment.js';
 
 // This is the create post end point
 
@@ -80,4 +83,44 @@ const deletePost = async (req, res) => {
   }
 };
 
-export { createPost, getPosts, editPost, deletePost };
+
+// Create Comment endpoint
+const createComment = async (req, res) => {
+  try {
+    const { postId, content, userId } = req.body;
+
+    // Check if the post exists
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    const comment = new Comment({ content, author: userId, post: postId });
+    await comment.save();
+
+    res.status(201).json({ message: 'Comment created successfully', comment });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get Comments for a Post endpoint
+const getCommentsForPost = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+
+    // Check if the post exists
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    const comments = await Comment.find({ post: postId }).populate('author', 'username');
+
+    res.json({ comments });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export { createPost, getPosts, editPost, deletePost,createComment,getCommentsForPost };
