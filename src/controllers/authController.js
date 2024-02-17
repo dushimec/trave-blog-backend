@@ -1,6 +1,8 @@
 import User from '../models/user.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config()
 
 // creating user registration
 const signup = async (req, res) => {
@@ -29,11 +31,78 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
-    const token = jwt.sign({ userId: user._id }, 'your-secret-key');
-    res.json({ token });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+    res.json({ token, user });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-export { signup, login };
+// get user by ID
+const getUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// get all users 
+const getAllUsers = async (req, res) => {
+  try {
+    
+    const user = await User.find();
+    if (!user) {
+      return res.status(404).json({ message: 'No User found' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// update user by ID
+const updateUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { username} = req.body;
+    
+    
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { username },
+      { new: true } 
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// delete user by ID
+const deleteUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export { signup, login, getUserById,updateUserById,deleteUserById,getAllUsers };
