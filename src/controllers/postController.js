@@ -5,21 +5,27 @@ import Post from '../models/post.js';
 
 const createPost = async (req, res) => {
   try {
-    const { title, content, userId } = req.body;
+    const { title, content } = req.body;
+    const userId = req.user.userId;
     const limit = 10;
+
     const post = new Post({ title, content, author: userId, comments: [], likes: 0 });
     await post.save();
+
     const totalPosts = await Post.countDocuments();
     const totalPages = Math.ceil(totalPosts / limit);
+
     res.status(201).json({
       message: 'Post created successfully',
       post,
       page: totalPages,
     });
   } catch (error) {
+    console.error('Error creating post:', error); // Log any errors
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // This is the get All posts end point
 const getPosts = async (req, res) => {
@@ -33,7 +39,10 @@ const getPosts = async (req, res) => {
     const posts = await Post.find()
       .skip(startIndex)
       .limit(limit)
-      .populate('author', 'username');
+      .populate({
+        path: 'author',
+        select: 'username',
+      });
 
     const totalPosts = await Post.countDocuments();
 
@@ -47,6 +56,7 @@ const getPosts = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // This is the Updating post end point
 const editPost = async (req, res) => {
@@ -93,7 +103,7 @@ const postComment = async (req, res) => {
 
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: 'Post not' });
     }
 
     post.comments.push({ body, likes: 0 });
@@ -121,13 +131,30 @@ const replyToComment = async (req, res) => {
       return res.status(404).json({ error: 'Comment not found' });
     }
 
-    comment.replies.push({ body, likes: 0 });
+    // Check if comment.replies is an array, if not, initialize it as an empty array
+    if (!comment.replies || !Array.isArray(comment.replies)) {
+      comment.replies = [];
+    }
+
+    // Add a new reply object to the replies array
+    const newReply = {
+      body,
+      likes: 0,
+    };
+
+    comment.replies.push(newReply);
     await post.save();
-    res.json(post);
+
+    res.status(201).json({
+      message: 'Reply added successfully',
+      post,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
+
 
 // Edit Comment endpoint
 const editComment = async (req, res) => {

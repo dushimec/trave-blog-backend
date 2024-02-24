@@ -1,37 +1,34 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { promisify } from 'util';
 import User from '../models/user.js';
 
 dotenv.config();
 
+const jwtVerifyAsync = promisify(jwt.verify);
+
 const authenticateToken = async (req, res, next) => {
-  const token = req.header('Authorization');
-  if (!token) return res.status(401).json({ message: 'Access denied. Token is missing.' });
+  try {
+    const token = req.header('Authorization');
+    if (!token) throw new Error('Access denied. Token is missing.');
 
+    const decodedToken = await jwtVerifyAsync(token.split(" ")[1], process.env.JWT_SECRET, { expiresIn: '1m' });
+    const foundUser = await User.findById(decodedToken.userId);
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(401).json({ message: 'Invalid token.' });
-    } else {
-      User.findById(user.id)
-        .then((foundUser) => {
-          req.user = foundUser;
-          next();
-        })
-        .catch((error) => {
-          // Handle the error, e.g., send a 500 response
-          res.status(500).json({ message: 'Internal Server Error' });
-        });
+    if (!foundUser) {
+      throw new Error('User not found.');
     }
-  });
-};
 
-const isAdmin = (req, res, next) => {
-  if (req.user && req.user.isAdmin) {
+    req.user = {
+      userId: decodedToken.userId,
+      isAdmin: decodedToken.isAdmin,
+    };
+
     next();
-  } else {
-    res.status(403).json({ message: 'Permission denied. Admin privileges required.' });
+  } catch (error) {
+    return res.status(401).json({ message: error.message || 'Invalid token.' });
   }
 };
 
-export { authenticateToken, isAdmin };
+
+export { authenticateToken};

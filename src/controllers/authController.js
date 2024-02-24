@@ -31,7 +31,7 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ userId: user._id,isAdmin:user.isAdmin }, process.env.JWT_SECRET);
     res.json({ token, user });
   } catch (error) {
     res.status(500).json({ error: error.message });

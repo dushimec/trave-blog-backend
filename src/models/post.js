@@ -1,11 +1,25 @@
-import { Schema, model } from 'mongoose';
+import mongoose, { Schema, model } from 'mongoose';
 
-const postSchema = new Schema({
-  title: { type: String, required: true },
-  content: { type: String, required: true },
-  author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  comments: [{ body: String, likes: Number }],
+const CommentSchema = new Schema({
+  body: String,
+  likes: Number,
+  replies: [
+    {
+      body: String,
+      likes: Number,
+    },
+  ],
+});
+
+const PostSchema = new Schema({
+  title: String,
+  content: String,
+  author: {
+    type: Schema.Types.ObjectId,
+    ref: 'User', // Assuming you have a User schema
+  },
+  comments: [CommentSchema],
   likes: Number,
 });
 
-export default model('Post', postSchema);
+export default model('Post', PostSchema);
