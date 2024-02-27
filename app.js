@@ -1,9 +1,11 @@
 // importind depences
 import express from 'express';
 import bodyParser from 'body-parser';
-import authRoutes from './src/routes/auth.js';
-import postRoutes from './src/routes/posts.js';
-import Dbconnection from './src/config/databaseConnection.js';
+import { connectToDatabase } from './src/config/databaseConnection.js';
+import paymentRouter from './src/routes/pyments.routes.js';
+import authRoutes from './src/routes/auth.routes.js';
+import postRoutes from './src/routes/posts.routes.js';
+
 
 const app = express();
 
@@ -11,12 +13,12 @@ const PORT = process.env.PORT || 3000;
 // middleware
 app.use(bodyParser.json());
 
-// database function connection
-Dbconnection()
+connectToDatabase()
 
 // routers
 app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
+app.use('/payment', paymentRouter);
 
 // app listener
 app.listen(PORT, () => {

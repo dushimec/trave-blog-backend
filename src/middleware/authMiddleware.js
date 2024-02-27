@@ -23,7 +23,6 @@ const authenticateToken = async (req, res, next) => {
       userId: decodedToken.userId,
       isAdmin: decodedToken.isAdmin,
     };
-
     next();
   } catch (error) {
     return res.status(401).json({ message: error.message || 'Invalid token.' });

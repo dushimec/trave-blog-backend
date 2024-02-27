@@ -5,6 +5,9 @@ import Post from '../models/post.js';
 
 const createPost = async (req, res) => {
   try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({message: "Access denied. Admini privileges required"})
+    }
     const { title, content } = req.body;
     const userId = req.user.userId;
     const limit = 10;

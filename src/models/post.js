@@ -16,10 +16,11 @@ const PostSchema = new Schema({
   content: String,
   author: {
     type: Schema.Types.ObjectId,
-    ref: 'User', // Assuming you have a User schema
+    ref: 'User',
   },
   comments: [CommentSchema],
   likes: Number,
+  payments: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
 });
 
 export default model('Post', PostSchema);

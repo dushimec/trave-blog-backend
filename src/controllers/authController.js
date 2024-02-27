@@ -55,7 +55,9 @@ const getUserById = async (req, res) => {
 // get all users 
 const getAllUsers = async (req, res) => {
   try {
-    
+    if (!req.user.isAdmin) {
+      return res.status(403).json({message: "Access denied. Admini privileges required"})
+    }
     const user = await User.find();
     if (!user) {
       return res.status(404).json({ message: 'No User found' });
@@ -105,4 +107,6 @@ const deleteUserById = async (req, res) => {
   }
 };
 
-export { signup, login, getUserById,updateUserById,deleteUserById,getAllUsers };
+
+
+export { signup, login, getUserById,updateUserById,deleteUserById,getAllUsers};
