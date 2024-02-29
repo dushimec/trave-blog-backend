@@ -2,6 +2,7 @@ import User from '../models/user.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { json } from 'body-parser';
 dotenv.config()
 
 // creating user registration
@@ -108,5 +109,31 @@ const deleteUserById = async (req, res) => {
 };
 
 
+// Get numbars of users
+const getUserCount = async (req,res) =>{
+  try {
+    if(!req.user.isAdmin){
+      return res.status(404).json({message: "Access denied. Admin Previleges required"})
+    }
+    // const userCount = await User.countDocuments();
+    // res.status(200).json({userCount})
 
-export { signup, login, getUserById,updateUserById,deleteUserById,getAllUsers};
+    const userCount = await User.aggregate(([
+      {
+        $group:{_id: null, count: {$sum:1}}
+      }
+    ]));
+    if(userCount.length > 0){
+      res.json({userCount: userCount[0].count})
+    }
+    else{
+      res.json({userCount: 0})
+    }
+
+  } catch (error) {
+    res.status(500).json({error: error.message})
+  }
+}
+
+
+export { signup, login, getUserById,updateUserById,deleteUserById,getAllUsers,getUserCount};
