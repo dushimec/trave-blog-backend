@@ -13,6 +13,7 @@ const authenticateToken = async (req, res, next) => {
     if (!token) throw new Error('Access denied. Token is missing.');
 
     const decodedToken = await jwtVerifyAsync(token.split(" ")[1], process.env.JWT_SECRET, { expiresIn: '1m' });
+    console.log('Decoded Token:', decodedToken);
     const foundUser = await User.findById(decodedToken.userId);
 
     if (!foundUser) {

@@ -6,11 +6,13 @@ import Post from "../models/post.js";
 const makePayment = async (req, res) => {
   try {
     const userId = req.user.userId;
-    console.log("userId", userId);
+
     const postId = req.params.postId;
+
     const { amount } = req.body;
 
     const post = await Post.findById(postId);
+    
     const user = await User.findById(userId);
 
     if (!user || !post) {

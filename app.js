@@ -5,6 +5,7 @@ import { connectToDatabase } from './src/config/databaseConnection.js';
 import paymentRouter from './src/routes/pyments.routes.js';
 import authRoutes from './src/routes/auth.routes.js';
 import postRoutes from './src/routes/posts.routes.js';
+import morgan from 'morgan';
 
 
 const app = express();
@@ -12,6 +13,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 // middleware
 app.use(bodyParser.json());
+app.use(morgan('tin'));
 
 connectToDatabase()
 
